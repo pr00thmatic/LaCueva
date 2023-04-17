@@ -17,7 +17,7 @@ public class GenerateAlongSpline : MonoBehaviour {
   public Transform folder;
   public GameObject prototype;
 
-  void OnEnable () {
+  public void Generate () {
     if (!spline || !prototype) return;
     CleanFolder();
     float splineLength = spline.CalculateLength();

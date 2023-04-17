@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Splines;
 
+[ExecuteInEditMode]
 public class MoveAlongSpline : MonoBehaviour {
   [Header("Configuration")]
   public float speed;
@@ -26,19 +27,30 @@ public class MoveAlongSpline : MonoBehaviour {
   }
 
   void Update () {
-    if (t > 1) return;
+    #if UNITY_EDITOR
+    if (!Application.isPlaying) {
+      SnapToSpline();
+    } else {
+    #endif
 
-    length = spline.CalculateLength(); // in case spline changes
-    t += (speed * Time.deltaTime) / length;
+      if (t > 1) return;
 
-    spline.Evaluate(0, t, out float3 position, out float3 tangent, out float3 upVector3);
-    target.position = (Vector3) position;
-    target.forward = (Vector3) tangent;
+      length = spline.CalculateLength(); // in case spline changes
+      t += (speed * Time.deltaTime) / length;
+
+      spline.Evaluate(0, t, out float3 position, out float3 tangent, out float3 upVector3);
+      target.position = (Vector3) position;
+      target.forward = (Vector3) tangent;
+    #if UNITY_EDITOR
+    }
+    #endif
   }
 
   public void SnapToSpline () {
-    SplineUtility.GetNearestPoint(spline.Splines[0], (float3) transform.position, out float3 nearest, out t);
-    target.position = (Vector3) nearest;
+    SplineUtility.GetNearestPoint(spline.Splines[0], (float3) target.position, out float3 nearest, out t);
+    if ((target.position - (Vector3) nearest).magnitude > 0.1f) {
+      target.position = (Vector3) nearest;
+    }
     target.forward = (Vector3) spline.EvaluateTangent(0, t);
   }
 }
